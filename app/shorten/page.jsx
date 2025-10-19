@@ -1,11 +1,39 @@
-"use client"
-import React, {useState} from "react";
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
 
 const page = () => {
+  const [url, seturl] = useState("");
+  const [shorturl, setshorturl] = useState("");
+  const [generatedurl, setgeneratedurl] = useState("");
 
-  const [url, seturl] = useState("")
-  const [shorturl, setshorturl] = useState("")
-  const [generatedurl, setgeneratedurl] = useState("")
+  const generate = () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      url: url,
+      shorturl: shorturl,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch("/api/shorten", requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        setgeneratedurl(`${process.env.NEXT_PUBLIC_HOST}/${shorturl}`)
+        seturl("")
+        setshorturl("")
+        console.log(result)
+        alert(result.message)
+      })
+      .catch((error) => console.error(error));
+  };
 
   return (
     <>
@@ -20,8 +48,8 @@ const page = () => {
               value={url}
               placeholder="Enter your URL"
               className="w-xl p-2 border-2 border-amber-50 rounded-br-3xl rounded-tl-3xl hover:border-3"
-              onChange={(e)=>{
-                seturl(e.target.value)
+              onChange={(e) => {
+                seturl(e.target.value);
               }}
             />
             <input
@@ -29,16 +57,26 @@ const page = () => {
               value={shorturl}
               placeholder="Enter your preferred your short URL text"
               className="w-xl p-2 border-2 border-amber-50 rounded-br-3xl rounded-tl-3xl hover:border-3"
-              onChange={(e)=>{
-                setshorturl(e.target.value)
+              onChange={(e) => {
+                setshorturl(e.target.value);
               }}
             />
             <div className="btn text-center mt-10">
-              <button className="bg-blue-500 font-bold p-2 text-white rounded-xl hover:bg-blue-600">
+              <button
+                onClick={generate}
+                className="bg-blue-500 font-bold p-2 text-white rounded-xl hover:bg-blue-600"
+              >
                 Generate
               </button>
             </div>
           </div>
+
+         {generatedurl && (
+          <code>
+            Your Link : <Link target="_blank" href={generatedurl}>{generatedurl}</Link>
+          </code>
+         )}
+
         </div>
       </div>
     </>
